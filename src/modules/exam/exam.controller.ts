@@ -32,7 +32,7 @@ export class ExamController {
       data: exam,
     };
   }
-
+ 
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {
