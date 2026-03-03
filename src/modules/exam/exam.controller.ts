@@ -34,8 +34,4 @@ export class ExamController {
   }
  
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.examService.remove(+id);
-  // }
 }

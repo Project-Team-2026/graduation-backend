@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { ExamRepository } from 'src/models';
 
@@ -9,6 +9,10 @@ export class ExamService {
   constructor(private readonly examRepository: ExamRepository) {}
 
   async create(createExamDto: CreateExamDto) {
+    const examExist = await this.examRepository.getOne({title: createExamDto.title})
+    if(examExist){
+      throw new ConflictException("Exam alredy exist")
+    }
     return await this.examRepository.create({title: createExamDto.title});
   }
 
@@ -29,8 +33,4 @@ export class ExamService {
   }
 
 
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} exam`;
-  // }
 }

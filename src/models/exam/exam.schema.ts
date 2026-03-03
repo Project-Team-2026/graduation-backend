@@ -31,6 +31,9 @@ export class Exam {
   @Prop({ type: Number })
   passingMark: number;
 
+  @Prop({ type: String})
+  answerSheetUrl: string
+
   @Prop({ type: [AnswerKey] })
   answerKey: AnswerKey[];
 
