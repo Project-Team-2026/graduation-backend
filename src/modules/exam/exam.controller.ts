@@ -1,6 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { CreateExamDto } from './dto/create-exam.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/utils';
+import { ModelAnswerDto } from './dto/model-answer.dto';
 
 @Controller('exam')
 export class ExamController {
@@ -33,5 +36,22 @@ export class ExamController {
     };
   }
  
+
+  
+  @Post(':id/model-answer')
+  // upload file Interceptor(middleware)
+  @UseInterceptors(FileInterceptor('answer_sheet', multerConfig))
+  async uploadFile(
+    @Param('id') id: string, 
+    @UploadedFile() file: Express.Multer.File,
+    @Body() modelAnswerDto: ModelAnswerDto
+  ) {
+    const exam = await this.examService.uploadModelAnswer(id, file, modelAnswerDto);
+    return {
+      message: 'Model answer uploaded successfully',
+      data: exam,
+    };
+  }
+
 
 }

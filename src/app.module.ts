@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule, UserModule } from './modules';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import devConfig from './config/env/dev.config';
-import { User, UserSchema , Exam, ExamSchema, AnswerSheet, AnswerSheetSchema} from './models';
-import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './common';
-import { ExamModule } from './modules/exam/exam.module';
+import devConfig from './config/env/dev.config';
+import { AnswerSheet, AnswerSheetSchema, Exam, ExamSchema, User, UserSchema } from './models';
+import { AnswerSheetModule, AuthModule, ExamModule, UserModule } from './modules';
 
 
 @Module({
@@ -39,6 +38,7 @@ import { ExamModule } from './modules/exam/exam.module';
     AuthModule,
     UserModule,
     ExamModule,
+    AnswerSheetModule,
   ],
   controllers: [AppController],
   providers: [

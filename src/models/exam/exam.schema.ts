@@ -1,6 +1,6 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { ObjectId, Types } from "mongoose";
-
+import { ProcessingStatus } from "src/common";
 
 @Schema()
 export class AnswerKey {
@@ -31,8 +31,11 @@ export class Exam {
   @Prop({ type: Number })
   passingMark: number;
 
-  @Prop({ type: String})
+  @Prop({ type: String })
   answerSheetUrl: string
+
+  @Prop({ type: Number, default: ProcessingStatus.PENDING })
+  processingStatus: number
 
   @Prop({ type: [AnswerKey] })
   answerKey: AnswerKey[];

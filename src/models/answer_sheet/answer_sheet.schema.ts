@@ -1,6 +1,7 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose"
 import  mongoose, { Types } from "mongoose"
 import { ProcessingStatus } from "src/common"
+import { Exam } from "../exam/exam.schema"
 
 @Schema()
 export class Answer {
@@ -23,22 +24,22 @@ export class AnswerSheet {
     
   readonly _id: Types.ObjectId;
 
-  @Prop({type: Types.ObjectId, ref: 'Exam'})
-  examId: mongoose.ObjectId
+  @Prop({type: Types.ObjectId, ref: Exam.name})
+  examId: Types.ObjectId
 
-  @Prop({type: String, required: true})
+  @Prop({type: String})
   studentId: string
 
   @Prop({type: String, required: true})
-  imagePath: string
+  filePath: string
 
   @Prop({type: Number, required: true, enum: ProcessingStatus, default: ProcessingStatus.PENDING})
   processingStatus: ProcessingStatus // 0: PENDING, 1: PROCESSING, 2: DONE, 3: FAILED
 
-  @Prop({type: Number, required: true})
+  @Prop({type: Number})
   score: number
 
-  @Prop({type: [Answer], required: true})
+  @Prop({type: [Answer]})
   answers: Answer[]
 
 }

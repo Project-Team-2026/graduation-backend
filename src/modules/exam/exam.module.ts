@@ -13,5 +13,6 @@ import { ExamSchema,Exam } from 'src/models';
   ],
   controllers: [ExamController],
   providers: [ExamService,ExamRepository],
+  exports: [ExamService,ExamRepository]
 })
 export class ExamModule {}
