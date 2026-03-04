@@ -1,9 +1,8 @@
+import { Exam, ExamRepository, ExamSchema } from '@models/index';
 import { Module } from '@nestjs/common';
-import { ExamService } from './exam.service';
-import { ExamController } from './exam.controller';
-import { ExamRepository } from 'src/models';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ExamSchema,Exam } from 'src/models';
+import { ExamController } from './exam.controller';
+import { ExamService } from './exam.service';
 
 @Module({
   imports: [

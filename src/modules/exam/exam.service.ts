@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateExamDto } from './dto/create-exam.dto';
-import { ExamRepository } from 'src/models';
+import { ExamRepository } from '@models/index';
 import * as fs from 'fs';
 import { ModelAnswerDto } from './dto/model-answer.dto';
 
@@ -47,8 +47,8 @@ export class ExamService {
     }
     
     // Save file to disk (exam folder with exam id)
-    const folderPath = `./exams/${id}/answer-sheet`;
-    const filePath = `${folderPath}/${file.filename}`;
+    const folderPath = `./exams/${id}`;
+    const filePath = `${folderPath}/model-answer.${file.originalname.split('.')[1]}`;
     // Create exam folder if not exists
     if (!fs.existsSync(folderPath)) {
       fs.mkdirSync(folderPath, { recursive: true });

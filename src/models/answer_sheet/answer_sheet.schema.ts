@@ -1,6 +1,6 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose"
 import  mongoose, { Types } from "mongoose"
-import { ProcessingStatus } from "src/common"
+import { ProcessingStatus } from "@common/index"
 import { Exam } from "../exam/exam.schema"
 
 @Schema()

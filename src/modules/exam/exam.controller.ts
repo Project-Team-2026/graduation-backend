@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { ExamService } from './exam.service';
-import { CreateExamDto } from './dto/create-exam.dto';
+import { Body, Controller, Get, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from 'src/utils';
+import { multerConfig } from '@utils/index';
+import { CreateExamDto } from './dto/create-exam.dto';
 import { ModelAnswerDto } from './dto/model-answer.dto';
+import { ExamService } from './exam.service';
 
 @Controller('exam')
 export class ExamController {
@@ -40,7 +40,7 @@ export class ExamController {
   
   @Post(':id/model-answer')
   // upload file Interceptor(middleware)
-  @UseInterceptors(FileInterceptor('answer_sheet', multerConfig))
+  @UseInterceptors(FileInterceptor('model_answer', multerConfig))
   async uploadFile(
     @Param('id') id: string, 
     @UploadedFile() file: Express.Multer.File,

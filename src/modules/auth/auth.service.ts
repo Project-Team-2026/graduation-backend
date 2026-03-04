@@ -1,9 +1,9 @@
+import { UserRepository } from '@models/index';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserRepository } from 'src/models';
-import { LoginDto } from './dto/login.dto';
-import { comparePassword } from 'src/utils';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { comparePassword } from '@utils/index';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {

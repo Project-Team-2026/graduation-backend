@@ -1,6 +1,6 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
-import { ObjectId, Types } from "mongoose";
-import { ProcessingStatus } from "src/common";
+import { Types } from "mongoose";
+import { ProcessingStatus } from "@common/index";
 
 @Schema()
 export class AnswerKey {

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ExamService } from '../exam/exam.service';
-import { AnswerSheetRepository } from 'src/models';
+import { AnswerSheetRepository } from '@models/index';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
 
@@ -19,14 +19,14 @@ export class AnswerSheetService {
       throw new NotFoundException('Exam not found');
     }
 
-    const folderPath = `exams/${examId}/dataSet`;
+    const folderPath = `exams/${examId}`;
     if (!fs.existsSync(folderPath)) {
       fs.mkdirSync(folderPath, { recursive: true });
     }
 
     // TODO: Save answer sheets to database
     for (const file of files) {
-      const filePath = `${folderPath}/${file.originalname}`;
+      const filePath = `${folderPath}/${count+1}.${file.originalname.split('.')[1]}`;
       const sheetExists = await this.answerSheetRepository.getOne({ examId, filePath });
       if (sheetExists) {
         console.log('Answer sheet already exists');

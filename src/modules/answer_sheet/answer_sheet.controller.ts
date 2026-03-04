@@ -1,7 +1,7 @@
 import { Controller, Param, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AnswerSheetService } from './answer_sheet.service';
-import { multerConfig } from 'src/utils';
+import { multerConfig } from '@utils/index';
 
 
 @Controller('answer-sheet')

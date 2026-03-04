@@ -1,9 +1,8 @@
+import { UserRepository } from '@models/index';
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { UserRepository } from 'src/models';
-import { CreateUserDto } from './dto/create-user.dto';
-import { hashPassword } from 'src/utils';
+import { comparePassword, hashPassword } from '@utils/index';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { comparePassword } from 'src/utils';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {

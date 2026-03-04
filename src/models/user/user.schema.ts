@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { UserRole } from "../../common";
+import { UserRole } from "@common/index";
 import { Types } from "mongoose";
 
 
