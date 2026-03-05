@@ -1,19 +1,17 @@
-import { Body, Controller, Get, Param, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from '@utils/index';
-import { CreateExamDto } from './dto/create-exam.dto';
-import { ModelAnswerDto } from './dto/model-answer.dto';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
 import { ExamService } from './exam.service';
+import { CreateExamDto } from './dto/create-exam.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from '../../utils';
+import { ModelAnswerDto } from './dto/model-answer.dto';
 
 @Controller('exam')
 export class ExamController {
-  constructor(private readonly examService: ExamService) {}
+  constructor(private readonly examService: ExamService) { }
 
   @Post()
-  async create(@Req() req: any, @Body() createExamDto: CreateExamDto) {
-    const userId = req.user._id; // Get from auth
-    const exam = await this.examService.create(createExamDto, userId);
-
+  async create(@Body() createExamDto: CreateExamDto, @Req() req: any) {
+    const exam = await this.examService.create(createExamDto, req.user._id);
     return {
       message: 'Exam created successfully',
       data: exam,
@@ -22,8 +20,9 @@ export class ExamController {
 
   @Get()
   async findAll(@Req() req: any) {
-    const userId = req.user._id; // Get from auth
-    const exams =await this.examService.findAll(userId);
+    console.log(`[ExamController] Request received for findAll. req.user:`, req.user);
+    const userId = req.user?._id;
+    const exams = await this.examService.findAll(userId);
     return {
       message: 'Exams fetched successfully',
       data: exams,
@@ -31,28 +30,25 @@ export class ExamController {
   }
 
   @Get(':id')
-  async findOne(@Req() req: any, @Param('id') id: string) {
-    const userId = req.user._id; // Get from auth
-    const exam =await this.examService.findOne(id, userId);
+  async findOne(@Param('id') id: string, @Req() req: any) {
+    const exam = await this.examService.findOne(id, req.user._id);
     return {
       message: 'Exam fetched successfully',
       data: exam,
     };
   }
- 
 
-  
+
+
   @Post(':id/model-answer')
   // upload file Interceptor(middleware)
-  @UseInterceptors(FileInterceptor('model_answer', multerConfig))
+  @UseInterceptors(FileInterceptor('answer_sheet', multerConfig))
   async uploadFile(
-    @Req() req: any,
-    @Param('id') id: string, 
+    @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
     @Body() modelAnswerDto: ModelAnswerDto
   ) {
-    const userId = req.user._id; // Get from auth
-    const exam = await this.examService.uploadModelAnswer(id, file, modelAnswerDto, userId);
+    const exam = await this.examService.uploadModelAnswer(id, file, modelAnswerDto);
     return {
       message: 'Model answer uploaded successfully',
       data: exam,

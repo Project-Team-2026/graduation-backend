@@ -36,9 +36,9 @@ export class ExamService {
     return exam;
   }
 
-  async uploadModelAnswer(id: string, file: Express.Multer.File, modelAnswerDto: ModelAnswerDto, userId: string) {
+  async uploadModelAnswer(id: string, file: Express.Multer.File, modelAnswerDto: ModelAnswerDto) {
 
-    const examExist = await this.examRepository.getOne({ _id: id, createdBy: new Types.ObjectId(userId) });
+    const examExist = await this.examRepository.getOne({ _id: id });
     if (!examExist) {
       throw new NotFoundException('Exam not found');
     }

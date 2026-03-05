@@ -1,4 +1,3 @@
-
 import {
   CanActivate,
   ExecutionContext,
@@ -16,7 +15,7 @@ export class AuthGuard implements CanActivate {
     private jwtService: JwtService,
     private readonly configService: ConfigService,
     private reflector: Reflector,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Check if the route is public
@@ -24,7 +23,7 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    
+
     if (isPublic) {
       return true;
     }
@@ -37,14 +36,16 @@ export class AuthGuard implements CanActivate {
     try {
       // 💡 Here the JWT secret key that's used for verifying the payload 
       // is the key that was passsed in the JwtModule
-      const {iat, exp, ...user} = await this.jwtService.verifyAsync(token, {
+      const { iat, exp, ...user } = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get("jwt").secret,
       });
 
+      console.log(`[AuthGuard] Token verified. User: ${user.username}, ID: ${user._id}`);
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request.user = user;
-    } catch {
+    } catch (e) {
+      console.error(`[AuthGuard] Token verification failed: ${e.message}`);
       throw new UnauthorizedException("Unauthorized: Invalid token");
     }
     return true;
