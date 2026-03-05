@@ -42,13 +42,14 @@ export class ExamController {
 
   @Post(':id/model-answer')
   // upload file Interceptor(middleware)
-  @UseInterceptors(FileInterceptor('answer_sheet', multerConfig))
+  @UseInterceptors(FileInterceptor('model_answer', multerConfig))
   async uploadFile(
+    @Req() req: any,
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
     @Body() modelAnswerDto: ModelAnswerDto
   ) {
-    const exam = await this.examService.uploadModelAnswer(id, file, modelAnswerDto);
+    const exam = await this.examService.uploadModelAnswer(id, file, modelAnswerDto, req.user._id);
     return {
       message: 'Model answer uploaded successfully',
       data: exam,

@@ -15,4 +15,5 @@ export enum PythonTask {
     PREPROCESS= "preprocess",
     DETECT_ID= "detect_id",
     ANSWERS= "answers",
+    PNG_CONVERTER= "png_converter",
 }

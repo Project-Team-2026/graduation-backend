@@ -7,8 +7,8 @@ export const runPythonScript = (task: PythonTask, imgPath: string) => {
 
         const py = spawn('python', [
             "python/main.py",
-            task,
-            imgPath
+            imgPath,
+            task
         ]);
 
         let output = '';
