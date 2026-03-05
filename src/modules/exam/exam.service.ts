@@ -3,6 +3,7 @@ import { CreateExamDto } from './dto/create-exam.dto';
 import { ExamRepository } from '@models/index';
 import * as fs from 'fs';
 import { ModelAnswerDto } from './dto/model-answer.dto';
+import { Types } from 'mongoose';
 
 
 @Injectable()
@@ -10,33 +11,34 @@ export class ExamService {
 
   constructor(private readonly examRepository: ExamRepository) {}
 
-  async create(createExamDto: CreateExamDto) {
-    const examExist = await this.examRepository.getOne({title: createExamDto.title})
+  async create(createExamDto: CreateExamDto, userId: string) {
+    const examExist = await this.examRepository.getOne({title: createExamDto.title, createdBy: userId})
     if(examExist){
       throw new ConflictException("Exam alredy exist")
     }
-    return await this.examRepository.create({title: createExamDto.title});
+    return await this.examRepository.create({title: createExamDto.title, createdBy: new Types.ObjectId(userId)});
   }
 
-  async findAll() {
-    const exams = await this.examRepository.getAll({}, {}, {projection: {answerKey: 0}});
+
+  async findAll(userId: string) {
+    const exams = await this.examRepository.getAll({createdBy: new Types.ObjectId(userId)}, {}, {projection: {answerKey: 0}});
     if (!exams) {
       throw new NotFoundException('Exams not found');
     }
     return exams;
   }
 
-  async findOne(id: string) {
-    const exam = await this.examRepository.getOne({ _id: id }, {}, {projection: {answerKey: 0}});
+  async findOne(id: string, userId: string) {
+    const exam = await this.examRepository.getOne({ _id: id, createdBy: new Types.ObjectId(userId) }, {}, {projection: {answerKey: 0}});
     if (!exam) {
       throw new NotFoundException('Exam not found');
     }
     return exam;
   }
 
-  async uploadModelAnswer(id: string, file: Express.Multer.File, modelAnswerDto: ModelAnswerDto) {
+  async uploadModelAnswer(id: string, file: Express.Multer.File, modelAnswerDto: ModelAnswerDto, userId: string) {
 
-    const examExist = await this.examRepository.getOne({ _id: id });
+    const examExist = await this.examRepository.getOne({ _id: id, createdBy: new Types.ObjectId(userId) });
     if (!examExist) {
       throw new NotFoundException('Exam not found');
     }

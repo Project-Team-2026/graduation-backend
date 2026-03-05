@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '@utils/index';
 import { CreateExamDto } from './dto/create-exam.dto';
@@ -10,8 +10,10 @@ export class ExamController {
   constructor(private readonly examService: ExamService) {}
 
   @Post()
-  async create(@Body() createExamDto: CreateExamDto) {
-    const exam = await this.examService.create(createExamDto);
+  async create(@Req() req: any, @Body() createExamDto: CreateExamDto) {
+    const userId = req.user._id; // Get from auth
+    const exam = await this.examService.create(createExamDto, userId);
+
     return {
       message: 'Exam created successfully',
       data: exam,
@@ -19,8 +21,9 @@ export class ExamController {
   }
 
   @Get()
-  async findAll() {
-    const exams =await this.examService.findAll();
+  async findAll(@Req() req: any) {
+    const userId = req.user._id; // Get from auth
+    const exams =await this.examService.findAll(userId);
     return {
       message: 'Exams fetched successfully',
       data: exams,
@@ -28,8 +31,9 @@ export class ExamController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const exam =await this.examService.findOne( id);
+  async findOne(@Req() req: any, @Param('id') id: string) {
+    const userId = req.user._id; // Get from auth
+    const exam =await this.examService.findOne(id, userId);
     return {
       message: 'Exam fetched successfully',
       data: exam,
@@ -42,11 +46,13 @@ export class ExamController {
   // upload file Interceptor(middleware)
   @UseInterceptors(FileInterceptor('model_answer', multerConfig))
   async uploadFile(
+    @Req() req: any,
     @Param('id') id: string, 
     @UploadedFile() file: Express.Multer.File,
     @Body() modelAnswerDto: ModelAnswerDto
   ) {
-    const exam = await this.examService.uploadModelAnswer(id, file, modelAnswerDto);
+    const userId = req.user._id; // Get from auth
+    const exam = await this.examService.uploadModelAnswer(id, file, modelAnswerDto, userId);
     return {
       message: 'Model answer uploaded successfully',
       data: exam,

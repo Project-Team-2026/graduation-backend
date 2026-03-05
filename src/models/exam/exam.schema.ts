@@ -1,6 +1,7 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
 import { ProcessingStatus } from "@common/index";
+import { User } from "../user/user.schema";
 
 @Schema()
 export class AnswerKey {
@@ -18,6 +19,9 @@ export class Exam {
 
 
   readonly _id: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: User.name })
+  createdBy: Types.ObjectId;
 
   @Prop({ type: String, required: true })
   title: string;
