@@ -12,9 +12,9 @@ export class AnswerSheetService {
     private readonly answerSheetRepository: AnswerSheetRepository
   ) {}
 
-  async uploadAnswerSheets(examId: string, files: Express.Multer.File[]) {
+  async uploadAnswerSheets(examId: string, files: Express.Multer.File[], userId: string) {
     let count = 0;
-    const examExists = await this.examService.findOne(examId);
+    const examExists = await this.examService.findOne(examId, userId);
     if (!examExists) {
       throw new NotFoundException('Exam not found');
     }
