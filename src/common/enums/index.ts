@@ -4,8 +4,12 @@ export enum UserRole {
 
 
 export enum ProcessingStatus {
+    UPLOADED,
     PENDING,
     PROCESSING,
+    PREPROCESSED,
+    ID_DETECTED,
+    ANSWERS_DETECTED,
     DONE,
     FAILED,
 }

@@ -6,8 +6,9 @@ from concurrent.futures import ProcessPoolExecutor
 import fitz
 import numpy as np
 import cv2
+from models.configs import dpi
 
-def pdf_to_images(file_path, dpi=300):
+def pdf_to_images(file_path, dpi=dpi):
     file_path = Path(file_path)
     folder_path = file_path.parent
     images_paths = []

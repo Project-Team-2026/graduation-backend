@@ -99,10 +99,18 @@ export class ExamService {
     }, { new: true });
 
     // add preprocessing job to queue
-    await this.preprocessingQueue.add('run-preprocessing',{
-      filePath: result.data[0],
-      examId: id
-    });
+    await this.preprocessingQueue.add(
+      'run-preprocessing',
+      { 
+        filePath: result.data[0],
+        examId: id
+      },
+      {
+        // if failed, retry 3 times with 5 seconds delay
+        attempts: 3,
+        backoff: 5000
+      }
+    );
     console.log('Preprocessing job added to queue');
 
     return exam;
