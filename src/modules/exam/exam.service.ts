@@ -5,13 +5,19 @@ import * as fs from 'fs';
 import { ModelAnswerDto } from './dto/model-answer.dto';
 import { Types } from 'mongoose';
 import { runPythonScript } from '@utils/index';
-import { PythonTask } from '@common/enums';
+import { ProcessingStatus, PythonTask } from '@common/index';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 
 
 @Injectable()
 export class ExamService {
 
-  constructor(private readonly examRepository: ExamRepository) { }
+  constructor(
+    private readonly examRepository: ExamRepository,
+    @InjectQueue('preprocessing')
+    private preprocessingQueue: Queue,
+  ) { }
 
   async create(createExamDto: CreateExamDto, userId: string) {
     const examExist = await this.examRepository.getOne({ title: createExamDto.title, createdBy: new Types.ObjectId(userId) })
@@ -89,8 +95,23 @@ export class ExamService {
       answerSheetUrl: result.data[0],
       totalQuestions: modelAnswerDto.totalQuestions,
       totalMarks: modelAnswerDto.totalMarks,
+      processingStatus: ProcessingStatus.PENDING
     }, { new: true });
 
+    // add preprocessing job to queue
+    await this.preprocessingQueue.add('run-preprocessing',{
+      filePath: result.data[0],
+      examId: id
+    });
+    console.log('Preprocessing job added to queue');
+
+    return exam;
+  }
+
+  async updateStatus(id: string, status: ProcessingStatus) {
+    const exam = await this.examRepository.findOneAndUpdate({ _id: id }, {
+      processingStatus: status
+    }, { new: true });
     return exam;
   }
 

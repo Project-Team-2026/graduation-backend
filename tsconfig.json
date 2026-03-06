@@ -7,6 +7,7 @@
       "@config/*": ["src/config/*"],
       "@models/*": ["src/models/*"],
       "@modules/*": ["src/modules/*"],
+      "@queues/*": ["src/queues/*"],
       
 
     },

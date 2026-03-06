@@ -4,14 +4,18 @@ import { AnswerSheetRepository } from '@models/index';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
 import { runPythonScript } from '@utils/index';
-import { PythonTask } from '@common/index';
+import { ProcessingStatus, PythonTask } from '@common/index';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 
 @Injectable()
 export class AnswerSheetService {
 
   constructor(
     private readonly examService: ExamService,
-    private readonly answerSheetRepository: AnswerSheetRepository
+    private readonly answerSheetRepository: AnswerSheetRepository,
+    @InjectQueue('preprocessing')
+    private preprocessingQueue: Queue,
   ) {}
 
   async uploadAnswerSheets(examId: string, files: Express.Multer.File[], userId: string) {
@@ -58,10 +62,19 @@ export class AnswerSheetService {
 
       // save files paths to database
       for (const path of result.data) {
-        this.answerSheetRepository.create({
+        const answerSheet = await this.answerSheetRepository.create({
           examId: new Types.ObjectId(examId),
           filePath: path,
+          processingStatus: ProcessingStatus.PENDING
         });
+
+        // add preprocessing job to queue
+        await this.preprocessingQueue.add('run-preprocessing', {
+          filePath: path,
+          answerSheetId: answerSheet._id
+        });
+        console.log('Preprocessing job added to queue');
+
         count++;
       }
     }
@@ -80,5 +93,12 @@ export class AnswerSheetService {
     const answerSheets = await this.answerSheetRepository.getAll({ examId: new Types.ObjectId(examId) },{ filePath: 1 });
 
     return answerSheets;
+  }
+
+  async updateStatus(id: string, status: ProcessingStatus) {
+    const answerSheet = await this.answerSheetRepository.findOneAndUpdate({ _id: id }, {
+      processingStatus: status
+    }, { new: true });
+    return answerSheet;
   }
 }

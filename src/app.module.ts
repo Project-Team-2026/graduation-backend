@@ -7,17 +7,27 @@ import { AppService } from './app.service';
 import { AuthGuard } from './common';
 import devConfig from './config/env/dev.config';
 import { AnswerSheet, AnswerSheetSchema, Exam, ExamSchema, User, UserSchema } from './models';
-import { AnswerSheetModule, AuthModule, ExamModule, UserModule } from './modules';
+import { AnswerSheetModule, AuthModule, ExamModule, ProcessingModule, UserModule } from './modules';
+import { BullModule } from '@nestjs/bull';
 
 
 @Module({
   imports: [
+    // Bull queue configuration
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+
+    
     // Load configuration files
     ConfigModule.forRoot({
       load: [devConfig],
       isGlobal: true,
     }),
-
+    
     // Connect to database
     MongooseModule.forRootAsync({
       inject: [ConfigService],
@@ -25,16 +35,17 @@ import { AnswerSheetModule, AuthModule, ExamModule, UserModule } from './modules
         uri: configService.get('database').url,
       }),
     }),
-
+    
     // Register mongoose modules
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Exam.name, schema: ExamSchema },
       { name: AnswerSheet.name, schema: AnswerSheetSchema },
-
+      
     ]),
-
+    
     // Register application modules
+    ProcessingModule,
     AuthModule,
     UserModule,
     ExamModule,
