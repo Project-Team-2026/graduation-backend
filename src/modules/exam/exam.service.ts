@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import { ModelAnswerDto } from './dto/model-answer.dto';
 import { Types } from 'mongoose';
 import { runPythonScript } from '@utils/index';
-import { ProcessingStatus, PythonTask } from '@common/index';
+import { ProcessingStatus, Tasks } from '@common/index';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 
@@ -15,7 +15,7 @@ export class ExamService {
 
   constructor(
     private readonly examRepository: ExamRepository,
-    @InjectQueue('preprocessing')
+    @InjectQueue(Tasks.PREPROCESS)
     private preprocessingQueue: Queue,
   ) { }
 
@@ -70,7 +70,7 @@ export class ExamService {
     fs.unlinkSync(file.path);
 
     // pefor saving to db, convert pdf to png if pdf (python pdf converter)
-    let result = await runPythonScript(PythonTask.PNG_CONVERTER, filePath) as any;
+    let result = await runPythonScript(Tasks.PNG_CONVERTER, filePath) as any;
     result = JSON.parse(result);
 
     if (!result.success) {
@@ -98,8 +98,9 @@ export class ExamService {
       processingStatus: ProcessingStatus.PENDING
     }, { new: true });
 
+    console.log('adding job');
     // add preprocessing job to queue
-    await this.preprocessingQueue.add(
+    this.preprocessingQueue.add(
       'run-preprocessing',
       { 
         filePath: result.data[0],
@@ -111,7 +112,7 @@ export class ExamService {
         backoff: 5000
       }
     );
-    console.log('Preprocessing job added to queue');
+    console.log('returning result');
 
     return exam;
   }

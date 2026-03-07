@@ -1,10 +1,10 @@
 import { Processor, Process, OnQueueFailed } from '@nestjs/bull';
 import { type Job } from 'bull';
 import { runPythonScript } from '@/utils';
-import { ProcessingStatus, PythonTask } from '@/common';
+import { ProcessingStatus, Tasks } from '@/common';
 import { ExamRepository, AnswerSheetRepository } from '@models/index';
 
-@Processor('preprocessing')
+@Processor(Tasks.PREPROCESS)
 export class PreprocessingProcessor {
 
   constructor(
@@ -25,7 +25,7 @@ export class PreprocessingProcessor {
     }
 
     let result = await runPythonScript(
-      PythonTask.PREPROCESS,
+      Tasks.PREPROCESS,
       filePath,
     ) as any;
     result = JSON.parse(result);

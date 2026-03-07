@@ -1,10 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ExamService } from '../exam/exam.service';
 import { AnswerSheetRepository } from '@models/index';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
-import { runPythonScript } from '@utils/index';
-import { ProcessingStatus, PythonTask } from '@common/index';
+import { ProcessingStatus, Tasks } from '@common/index';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 
@@ -14,12 +13,11 @@ export class AnswerSheetService {
   constructor(
     private readonly examService: ExamService,
     private readonly answerSheetRepository: AnswerSheetRepository,
-    @InjectQueue('preprocessing')
-    private preprocessingQueue: Queue,
+    @InjectQueue(Tasks.PNG_CONVERTER)
+    private pngConverterQueue: Queue,
   ) {}
 
   async uploadAnswerSheets(examId: string, files: Express.Multer.File[], userId: string) {
-    let count = 0;
     const examExists = await this.examService.findOne(examId, userId);
     if (!examExists) {
       throw new NotFoundException('Exam not found');
@@ -34,7 +32,7 @@ export class AnswerSheetService {
     // TODO: Save answer sheets to database
     for (const file of files) {
 
-      const filePath = `${folderPath}/${count+1}.${file.originalname.split('.')[1]}`;
+      const filePath = `${folderPath}/${file.originalname}`;
 
       const sheetExists = await this.answerSheetRepository.getOne({ examId, filePath });
 
@@ -42,52 +40,37 @@ export class AnswerSheetService {
         console.log('Answer sheet already exists');
         continue;
       }
+
       // move file from temp path to folderPath
       fs.copyFileSync(file.path, filePath);
       // delete temp file
       fs.unlinkSync(file.path);
 
-      // pefor saving to db, convert pdf to png if pdf (python pdf converter)
-      let result = await runPythonScript(PythonTask.PNG_CONVERTER, filePath) as any;
-      result = JSON.parse(result);
+      // save file path to database
+      const answerSheet = await this.answerSheetRepository.create({
+        examId: new Types.ObjectId(examId),
+        filePath: filePath,
+        processingStatus: ProcessingStatus.PENDING
+      });
 
-      if (!result.success) {
-        // delete the file if conversion failed
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+      // add convert png job
+      console.log('Adding convert png job');
+      this.pngConverterQueue.add(
+        Tasks.PNG_CONVERTER,
+        {
+          filePath: filePath,
+          examId,
+          answerSheetId: answerSheet._id
+        },
+        {
+          attempts: 3,
+          backoff: 5000
         }
-        throw new BadRequestException("Failed to convert PDF to PNG: " + result.message);
-      }
+      );
 
-
-      // save files paths to database
-      for (const path of result.data) {
-        const answerSheet = await this.answerSheetRepository.create({
-          examId: new Types.ObjectId(examId),
-          filePath: path,
-          processingStatus: ProcessingStatus.PENDING
-        });
-
-        // add preprocessing job to queue
-        await this.preprocessingQueue.add(
-          'run-preprocessing',
-          {
-            filePath: path,
-            answerSheetId: answerSheet._id
-          }, 
-          {
-            // if failed, retry 3 times with 5 seconds delay
-            attempts: 3,
-            backoff: 5000
-          }
-        );
-        console.log('Preprocessing job added to queue');
-
-        count++;
-      }
     }
 
-    return `${count} answer sheets detected from ${files.length} files successfully`;
+    return ` ${files.length} files uploaded successfully`;
   }
 
 

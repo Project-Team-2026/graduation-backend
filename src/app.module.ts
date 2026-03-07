@@ -21,6 +21,8 @@ import { BullModule } from '@nestjs/bull';
       },
     }),
 
+    ProcessingModule,
+
     
     // Load configuration files
     ConfigModule.forRoot({

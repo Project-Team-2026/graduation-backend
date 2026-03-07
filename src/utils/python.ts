@@ -1,8 +1,8 @@
 
 import { spawn } from 'child_process';
-import { PythonTask } from '@common/enums';
+import { Tasks } from '@common/enums';
 
-export const runPythonScript = (task: PythonTask, imgPath: string) => {
+export const runPythonScript = (task: Tasks, imgPath: string) => {
     return new Promise((resolve, reject) => {
 
         const py = spawn('python', [

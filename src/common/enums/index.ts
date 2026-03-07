@@ -15,9 +15,10 @@ export enum ProcessingStatus {
 }
 
 
-export enum PythonTask {
+export enum Tasks {
     PREPROCESS= "preprocess",
     DETECT_ID= "detect_id",
     ANSWERS= "answers",
     PNG_CONVERTER= "png_converter",
 }
+
