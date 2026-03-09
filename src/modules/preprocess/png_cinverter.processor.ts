@@ -30,7 +30,7 @@ export class PngCinverterProcessor {
         result = JSON.parse(result);
 
         if (!result.success) {
-            throw new Error('Failed to convert PNG: ' + result.message);
+            throw new Error('Failed to convert PNG: ' + result.data);
         }
 
         // Update answer sheet with converted PNG path

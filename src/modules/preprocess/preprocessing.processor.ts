@@ -46,7 +46,6 @@ export class PreprocessingProcessor {
       //TODO: if answer sheet add to detect answer Queue
     }
 
-    console.log('Preprocessing job completed');
     return result;
   }
 
