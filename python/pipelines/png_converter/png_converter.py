@@ -65,7 +65,7 @@ def pdf_image_converter(file_path):
             return {"success": False, "message": f"Failed to read image: {file_path}"}
 
 
-        return {"success": True, "pages": 1, "data": [file_path]}
+        return {"success": True, "pages": 1, "data": [str(file_path)]}
 
     # 1) PDF Conversion
     elif ext == ".pdf":
