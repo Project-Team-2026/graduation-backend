@@ -30,6 +30,9 @@ export class AnswerSheet {
   @Prop({type: String})
   studentId: string
 
+  @Prop({ type:Boolean, default: false})
+  idConflict: boolean
+
   @Prop({type: String, required: true})
   filePath: string
 

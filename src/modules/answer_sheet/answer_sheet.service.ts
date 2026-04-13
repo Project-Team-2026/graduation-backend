@@ -23,7 +23,7 @@ export class AnswerSheetService {
       throw new NotFoundException('Exam not found');
     }
 
-    const folderPath = `exams/${examId}`;
+    const folderPath = `exams\\${examId}`;
     if (!fs.existsSync(folderPath)) {
       fs.mkdirSync(folderPath, { recursive: true });
     }
@@ -32,10 +32,12 @@ export class AnswerSheetService {
     // TODO: Save answer sheets to database
     for (const file of files) {
 
-      const filePath = `${folderPath}/${file.originalname}`;
+      const filePath = `${folderPath}\\${file.originalname}`;
+      // Check if any sheet exists for this exam with similar filename
+      const baseFileName = file.originalname.replace(/\.[^/.]+$/, ""); // Remove extension
+      const sheetExists = await this.answerSheetRepository.getOne({ examId: new Types.ObjectId(examId), filePath: { $regex: baseFileName } });
 
-      const sheetExists = await this.answerSheetRepository.getOne({ examId, filePath });
-
+      
       if (sheetExists) {
         console.log('Answer sheet already exists');
         continue;
@@ -76,12 +78,11 @@ export class AnswerSheetService {
 
   async getAnswerSheets(examId: string, userId: string) {
     const examExists = await this.examService.findOne(examId, userId);
-    console.log("examExists", examExists);
     if (!examExists) {
       throw new NotFoundException('Exam not found');
     }
 
-    const answerSheets = await this.answerSheetRepository.getAll({ examId: new Types.ObjectId(examId) },{ filePath: 1 });
+    const answerSheets = await this.answerSheetRepository.getAll({ examId: new Types.ObjectId(examId) });
 
     return answerSheets;
   }

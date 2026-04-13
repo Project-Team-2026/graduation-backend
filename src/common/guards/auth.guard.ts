@@ -40,7 +40,7 @@ export class AuthGuard implements CanActivate {
         secret: this.configService.get("jwt").secret,
       });
 
-      console.log(`[AuthGuard] Token verified. User: ${user.username}, ID: ${user._id}`);
+      console.log(`[AuthGuard] Token verified. User: ${user.username}, ID: ${user._id}, method: ${request.method}, url: ${request.url}`);
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request.user = user;

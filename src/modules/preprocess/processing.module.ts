@@ -6,6 +6,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PreprocessingProcessor } from './preprocessing.processor';
 import { Tasks } from '@/common';
 import { PngCinverterProcessor } from './png_cinverter.processor';
+import { DetectIdProcessor } from './detect_Id.processor';
+
 
 @Module({
   imports: [
@@ -15,12 +17,14 @@ import { PngCinverterProcessor } from './png_cinverter.processor';
     ]),
     BullModule.registerQueue(
       { name: Tasks.PNG_CONVERTER },
-      { name: Tasks.PREPROCESS }
+      { name: Tasks.PREPROCESS },
+      { name: Tasks.DETECT_ID }
     )
   ],
   providers: [
     PreprocessingProcessor,
     PngCinverterProcessor,
+    DetectIdProcessor,
     ExamRepository,
     AnswerSheetRepository
   ],

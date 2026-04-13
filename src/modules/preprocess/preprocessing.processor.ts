@@ -3,6 +3,8 @@ import { type Job } from 'bull';
 import { runPythonScript } from '@/utils';
 import { ProcessingStatus, Tasks } from '@/common';
 import { ExamRepository, AnswerSheetRepository } from '@models/index';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 
 @Processor(Tasks.PREPROCESS)
 export class PreprocessingProcessor {
@@ -10,6 +12,7 @@ export class PreprocessingProcessor {
   constructor(
     private readonly examRepository: ExamRepository,
     private readonly answerSheetRepository: AnswerSheetRepository,
+    @InjectQueue(Tasks.DETECT_ID) private readonly detectIdQueue: Queue,
   ) {}
 
   @Process('run-preprocessing')
@@ -18,11 +21,6 @@ export class PreprocessingProcessor {
     const { examId, answerSheetId, filePath } = job.data;
     console.log('Starting preprocessing job:', job.data);
 
-    if(examId) {
-      await this.examRepository.findOneAndUpdate({ _id: examId }, { processingStatus: ProcessingStatus.PROCESSING });
-    }else if(answerSheetId) {
-      await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, { processingStatus: ProcessingStatus.PROCESSING });
-    }
 
     let result = await runPythonScript(
       Tasks.PREPROCESS,
@@ -43,6 +41,11 @@ export class PreprocessingProcessor {
     }else if(answerSheetId) {
       await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, { processingStatus: ProcessingStatus.PREPROCESSED });
       //TODO: if answer sheet add to detectId Queue
+      this.detectIdQueue.add(
+        Tasks.DETECT_ID, 
+        { answerSheetId, filePath },
+        { attempts: 3, backoff: 5000 }
+      );
       //TODO: if answer sheet add to detect answer Queue
     }
 
