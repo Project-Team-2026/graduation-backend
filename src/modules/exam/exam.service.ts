@@ -44,7 +44,7 @@ export class ExamService {
     return exam;
   }
 
-  async uploadModelAnswer(id: string, file: Express.Multer.File, modelAnswerDto: ModelAnswerDto, userId) {
+  async uploadModelAnswer(id: string, file: Express.Multer.File, modelAnswerDto: ModelAnswerDto, userId: string) {
 
     const examExist = await this.findOne(id, userId)
     if (!examExist) {
@@ -200,6 +200,15 @@ export class ExamService {
       await this.examRepository.findOneAndUpdate({ _id: id }, { answerSheetUrl: "", answerKey: [], processingStatus: ProcessingStatus.FAILED });
       throw new BadRequestException('Failed to process model answer: ' + error.message);
     }
+  }
+
+
+  async updateAnswers(id: string, answers: any[], userId: string) {
+    
+    const exam = await this.findOne(id, userId);
+
+    
+    return exam;
   }
 
   async updateStatus(id: string, status: ProcessingStatus) {
