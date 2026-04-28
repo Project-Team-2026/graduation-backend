@@ -2,13 +2,14 @@
 import { spawn } from 'child_process';
 import { Tasks } from '@common/enums';
 
-export const runPythonScript = (task: Tasks, imgPath: string) => {
+export const runPythonScript = (task: Tasks, imgPath: string, num_questions?: number) => {
     return new Promise((resolve, reject) => {
 
         const py = spawn('python', [
             "python/main.py",
             imgPath,
-            task
+            task,
+            (num_questions || 100).toString()
         ]);
 
         let output = '';

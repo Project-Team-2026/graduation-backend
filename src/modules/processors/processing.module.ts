@@ -7,6 +7,8 @@ import { PreprocessingProcessor } from './preprocessing.processor';
 import { Tasks } from '@/common';
 import { PngCinverterProcessor } from './png_cinverter.processor';
 import { DetectIdProcessor } from './detect_Id.processor';
+import { DetectAnswerProcessor } from './detect_answer.processor';
+import { CorrectingQuestionsProcessor } from './correcting_questions.processor';
 
 
 @Module({
@@ -18,13 +20,17 @@ import { DetectIdProcessor } from './detect_Id.processor';
     BullModule.registerQueue(
       { name: Tasks.PNG_CONVERTER },
       { name: Tasks.PREPROCESS },
-      { name: Tasks.DETECT_ID }
+      { name: Tasks.DETECT_ID },
+      { name: Tasks.DETECT_ANSWER },
+      { name: Tasks.CORRECT_QUESTIONS },
     )
   ],
   providers: [
     PreprocessingProcessor,
     PngCinverterProcessor,
     DetectIdProcessor,
+    DetectAnswerProcessor,
+    CorrectingQuestionsProcessor,
     ExamRepository,
     AnswerSheetRepository
   ],

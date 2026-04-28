@@ -19,7 +19,7 @@ export class PreprocessingProcessor {
   async handlePreprocessing(job: Job) {
 
     const { examId, answerSheetId, filePath } = job.data;
-    console.log('Starting preprocessing job:', job.data);
+    console.log('Starting preprocessing job for:', filePath);
 
 
     let result = await runPythonScript(
@@ -37,7 +37,7 @@ export class PreprocessingProcessor {
     // update processing status
     if(examId) {
       await this.examRepository.findOneAndUpdate({ _id: examId }, { processingStatus: ProcessingStatus.PREPROCESSED });
-      //TODO: if exam add to detect answer Queue
+      // Model answer processing is now handled sync in uploadModelAnswer
     }else if(answerSheetId) {
       await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, { processingStatus: ProcessingStatus.PREPROCESSED });
       //TODO: if answer sheet add to detectId Queue

@@ -19,8 +19,8 @@ export class PngCinverterProcessor {
 
     @Process(Tasks.PNG_CONVERTER)
     async handlePngCinverter(job: Job) {
-        console.log('Processing PNG cinverter job:', job.data);
         const { filePath, answerSheetId, examId } = job.data;
+        console.log('PNG cinverter job for:', filePath);
 
         if (!filePath || !answerSheetId || !examId) {
             throw new Error('Missing required fields: filePath or answerSheetId or examId');
