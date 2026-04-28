@@ -4,6 +4,7 @@ import { CreateExamDto } from './dto/create-exam.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../../utils';
 import { ModelAnswerDto } from './dto/model-answer.dto';
+import { UpdateAnswersDto } from './dto';
 
 @Controller('exam')
 export class ExamController {
@@ -56,5 +57,13 @@ export class ExamController {
     };
   }
 
+  @Patch(':id/answers')
+  async updateAnswers(@Param('id') id: string, @Body() updateAnswersDto: UpdateAnswersDto, @Req() req: any) {
+    const exam = await this.examService.updateAnswers(id, updateAnswersDto, req.user._id);
+    return {
+      message: 'Answers updated successfully',
+      data: exam,
+    };
+  }
 
 }

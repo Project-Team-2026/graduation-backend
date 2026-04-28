@@ -1,8 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateExamDto } from './dto/create-exam.dto';
+import { CreateExamDto, ModelAnswerDto, UpdateAnswersDto } from './dto';
 import { ExamRepository } from '@models/index';
 import * as fs from 'fs';
-import { ModelAnswerDto } from './dto/model-answer.dto';
 import { Types } from 'mongoose';
 import { runPythonScript } from '@utils/index';
 import { AnswerStatus, BubbleState, ProcessingStatus, Tasks } from '@common/index';
@@ -37,7 +36,7 @@ export class ExamService {
   }
 
   async findOne(id: string, userId: string) {
-    const exam = await this.examRepository.getOne({ _id: id, createdBy: new Types.ObjectId(userId) }, {}, { projection: { answerKey: 0 } });
+    const exam = await this.examRepository.getOne({ _id: id, createdBy: new Types.ObjectId(userId) });
     if (!exam) {
       throw new NotFoundException('Exam not found');
     }
@@ -177,8 +176,10 @@ export class ExamService {
       const updatedExam = await this.examRepository.findOneAndUpdate(
         { _id: id }, 
         { 
-          answerSheetUrl: filePath,
+          answerSheetUrl: pngPath,
           answerKey: choices,
+          totalQuestions: modelAnswerDto.totalQuestions,
+          totalMarks: modelAnswerDto.totalMarks,
           processingStatus: ProcessingStatus.DONE
         },
         { returnDocument: 'after' } // Return the updated document
@@ -203,12 +204,51 @@ export class ExamService {
   }
 
 
-  async updateAnswers(id: string, answers: any[], userId: string) {
+  async updateAnswers(id: string, updateAnswersDto: UpdateAnswersDto, userId: string) {
     
-    const exam = await this.findOne(id, userId);
+    let exam = await this.findOne(id, userId);
 
+    if (!exam || exam.processingStatus !== ProcessingStatus.DONE) {
+      throw new BadRequestException('Exam not found or not processed yet');
+    }
+
+    // Create a map of updated answers for quick lookup
+    const updatedAnswersMap = new Map();
+    if (updateAnswersDto.answers && Array.isArray(updateAnswersDto.answers)) {
+      updateAnswersDto.answers.forEach(answer => {
+        updatedAnswersMap.set(answer.questionNumber, answer);
+      });
+    }
+
+    // Update only the questions that were modified
+    const updatedAnswerKey = exam.answerKey.map(existingAnswer => {
+      const updatedAnswer = updatedAnswersMap.get(existingAnswer.questionNumber);
+      
+      let finalAnswer = {
+        questionNumber: existingAnswer.questionNumber,
+        answersIndex: existingAnswer.answersIndex,
+        status: existingAnswer.status
+      };
+
+      if (updatedAnswer) {
+        // This question was updated - use the new values
+        finalAnswer.answersIndex = updatedAnswer.answersIndex;
+        finalAnswer.status = AnswerStatus.ANSWERED; // Set status to ANSWERED when answer is provided
+      } 
+
+      return finalAnswer;
+    });
+
+    // Save exam with updated answerKey    
+    const result = await this.examRepository.findOneAndUpdate(
+      { _id: id }, 
+      { answerKey: updatedAnswerKey }, 
+      { returnDocument: 'after' }
+    );
     
-    return exam;
+    // Also fetch fresh data to verify
+    const freshExam = await this.examRepository.getOne({ _id: id });
+    return result;
   }
 
   async updateStatus(id: string, status: ProcessingStatus) {

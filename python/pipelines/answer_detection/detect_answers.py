@@ -17,8 +17,9 @@ from pymupdf.table import bbox_getter
 # CONFIG
 # =========================
  
-MODEL_PATH  = r"D:\Graduathion_project\graduation-backend\python\pipelines\answer_detection\bubble_model.pth" 
-IMG_SIZE    = 64
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(SCRIPT_DIR, "bubble_model.pth")
+IMG_SIZE   = 64
 CLASS_NAMES = ["ambiguous", "empty", "filled"]
 DEVICE      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

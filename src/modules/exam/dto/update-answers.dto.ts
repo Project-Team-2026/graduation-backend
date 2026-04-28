@@ -1,15 +1,30 @@
-import { IsArray, IsNumber, IsNotEmpty, IsPositive } from "class-validator";
+import { AnswerStatus } from "@common/index";
+import { Type } from "class-transformer";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 
-export class UpdateAnswersDto {
-
+class AnswerDto {
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     questionNumber: number;
-
+    
     @IsArray()
     @IsNotEmpty()
     @IsNumber({}, { each: true })
-    answer: [number];
+    answersIndex: number[];
+    
+    @IsNotEmpty()
+    @IsEnum(AnswerStatus)
+    status: AnswerStatus;
+}
+
+
+export class UpdateAnswersDto {
+
+    @IsArray()
+    @IsNotEmpty()
+    @Type(() => AnswerDto)
+    answers: AnswerDto[];
+
     
 }
