@@ -253,4 +253,3 @@ def run_id_detection(image_path):
     r = process_image(image_path, ref)
 
     return r
-print("hi")
