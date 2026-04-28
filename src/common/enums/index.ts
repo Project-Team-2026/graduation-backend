@@ -18,7 +18,21 @@ export enum ProcessingStatus {
 export enum Tasks {
     PREPROCESS= "preprocess",
     DETECT_ID= "detect_id",
-    ANSWERS= "answers",
+    DETECT_ANSWER= "detect_answers",
     PNG_CONVERTER= "png_converter",
+    CORRECT_QUESTIONS= "correct_questions",
 }
 
+// answer-status.enum.ts
+export enum AnswerStatus {
+  ANSWERED,
+  UNANSWERED,
+  MULTIPLE,
+  AMBIGUOUS,
+}
+
+export enum BubbleState {
+  AMBIGUOUS = 0,
+  EMPTY     = 1,
+  FILLED    = 2,
+}

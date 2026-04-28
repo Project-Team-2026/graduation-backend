@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ExamController } from './exam.controller';
 import { ExamService } from './exam.service';
-import { ProcessingModule } from '../preprocess/processing.module';
+import { ProcessingModule } from '../processors/processing.module';
 
 @Module({
   imports: [

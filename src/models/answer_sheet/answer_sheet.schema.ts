@@ -1,19 +1,23 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose"
 import  mongoose, { Types } from "mongoose"
-import { ProcessingStatus } from "@common/index"
+import { ProcessingStatus, AnswerStatus } from "@common/index"
 import { Exam } from "../exam/exam.schema"
 
 @Schema()
 export class Answer {
-    
-  @Prop({type: Number, required: true})
+
+  @Prop({ type: Number, required: true })
   questionNumber: number
-  
-  @Prop({type: [String], required: true})
-  selectedAnswer: string[]
-  
-  @Prop({type: Boolean, required: true})
-  isCorrect: boolean
+
+  @Prop({ type: [Number], default: [] })
+  answersIndex: number[]  // 'A' = [0], 'B','C' = [1,2], none = []
+
+  @Prop({ type: String, required: true, enum: AnswerStatus, default: AnswerStatus.UNANSWERED })
+  status: AnswerStatus  // ← بديل لـ conflict + isCorrect جزئياً
+
+  @Prop({ type: Boolean, required: true, default: false })
+  isCorrect: boolean  // بيتحسب بس لو status === ANSWERED
+
 }
 
 @Schema({
@@ -30,7 +34,7 @@ export class AnswerSheet {
   @Prop({type: String})
   studentId: string
 
-  @Prop({ type:Boolean, default: false})
+  @Prop({type: Boolean, default: false})
   idConflict: boolean
 
   @Prop({type: String, required: true})

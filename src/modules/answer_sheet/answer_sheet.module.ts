@@ -4,7 +4,7 @@ import { AnswerSheetController } from './answer_sheet.controller';
 import { AnswerSheetRepository, AnswerSheetSchema } from '@models/index';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ExamModule } from '../exam/exam.module';
-import { ProcessingModule } from '../preprocess/processing.module';
+import { ProcessingModule } from '../processors/processing.module';
 
 @Module({
   imports: [
