@@ -36,13 +36,13 @@ export class PngCinverterProcessor {
         // Update answer sheet with converted PNG path
         await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, {
             filePath: result.data[0],
-            processingStatus: ProcessingStatus.PROCESSING
+            status: ProcessingStatus.PROCESSING
         });
 
         // after converting all pages to png, send job to preprocessing processor 
         // (add job to preprocessing queue)
         this.preprocessingQueue.add(
-            'run-preprocessing',
+            Tasks.PREPROCESS,
             {
                 answerSheetId: answerSheetId,
                 filePath: result.data[0]
@@ -61,14 +61,14 @@ export class PngCinverterProcessor {
                 await this.answerSheetRepository.create({
                     examId: new Types.ObjectId(examId),
                     filePath: result.data[i],
-                    processingStatus: ProcessingStatus.PROCESSING
+                    status: ProcessingStatus.PROCESSING
                 });
 
 
                 // after converting all pages to png, send job to preprocessing processor 
                 // (add job to preprocessing queue)
                 this.preprocessingQueue.add(
-                    'run-preprocessing',
+                    Tasks.PREPROCESS,
                     {
                         answerSheetId: answerSheetId,
                         filePath: result.data[i]

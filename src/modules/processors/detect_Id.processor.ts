@@ -27,7 +27,11 @@ export class DetectIdProcessor {
         // update DB document
         const sheet = await this.answerSheetRepository.findOneAndUpdate(
             { _id: answerSheetId },
-            { studentId: data.student_id, idConflict: data.warning , processingStatus: ProcessingStatus.ID_DETECTED }
+            { 
+                studentId: data.student_id,
+                idConflict: data.warning , 
+                status: ProcessingStatus.ID_DETECTED 
+            }
         );
         
         if (!sheet) {

@@ -1,13 +1,16 @@
 import { AnswerStatus, BubbleState, Tasks, ProcessingStatus } from "@/common";
 import { AnswerSheetRepository } from "@/models";
 import { runPythonScript } from "@/utils";
-import { Process, Processor } from "@nestjs/bull";
-import type { Job } from "bull";
+import { InjectQueue, Process, Processor } from "@nestjs/bull";
+import type { Job, Queue } from "bull";
 
 @Processor(Tasks.DETECT_ANSWER)
 export class DetectAnswerProcessor {
 
-    constructor( private readonly answerSheetRepository: AnswerSheetRepository) {}
+    constructor( 
+        private readonly answerSheetRepository: AnswerSheetRepository,
+        @InjectQueue(Tasks.CORRECT_QUESTIONS) private readonly correctQuestionsQueue: Queue
+    ) {}
 
     @Process(Tasks.DETECT_ANSWER)
     async handleDetectAnswer(job: Job) {
@@ -59,11 +62,16 @@ export class DetectAnswerProcessor {
             { _id: answerSheetId }, 
             { 
                 answers: answers,
-                processingStatus: ProcessingStatus.ANSWERS_DETECTED
+                status: ProcessingStatus.ANSWERS_DETECTED
             }
         );
-        
-        // console.log(` Answers: ${JSON.stringify(answers)}`);
+
+        // TODO: add correct questions job to queue
+        this.correctQuestionsQueue.add(
+            Tasks.CORRECT_QUESTIONS,
+            { answerSheetId }
+        );
+
 
 
     }

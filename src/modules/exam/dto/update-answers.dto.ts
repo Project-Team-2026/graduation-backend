@@ -8,6 +8,7 @@ class AnswerDto {
     @IsPositive()
     questionNumber: number;
     
+    @IsOptional()
     @IsArray()
     @IsNotEmpty()
     @IsNumber({}, { each: true })

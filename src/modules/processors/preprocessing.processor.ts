@@ -15,7 +15,7 @@ export class PreprocessingProcessor {
     @InjectQueue(Tasks.DETECT_ID) private readonly detectIdQueue: Queue,
   ) {}
 
-  @Process('run-preprocessing')
+  @Process(Tasks.PREPROCESS)
   async handlePreprocessing(job: Job) {
 
     const { examId, answerSheetId, filePath } = job.data;
@@ -39,7 +39,7 @@ export class PreprocessingProcessor {
       await this.examRepository.findOneAndUpdate({ _id: examId }, { processingStatus: ProcessingStatus.PREPROCESSED });
       // Model answer processing is now handled sync in uploadModelAnswer
     }else if(answerSheetId) {
-      await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, { processingStatus: ProcessingStatus.PREPROCESSED });
+      await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, { status: ProcessingStatus.PREPROCESSED });
       //TODO: if answer sheet add to detectId Queue
       this.detectIdQueue.add(
         Tasks.DETECT_ID, 
@@ -62,7 +62,7 @@ export class PreprocessingProcessor {
     if(examId) {
       await this.examRepository.findOneAndUpdate({ _id: examId }, { processingStatus: ProcessingStatus.FAILED });
     }else if(answerSheetId) {
-      await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, { processingStatus: ProcessingStatus.FAILED });
+      await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, { status: ProcessingStatus.FAILED });
     }
   }
 }
