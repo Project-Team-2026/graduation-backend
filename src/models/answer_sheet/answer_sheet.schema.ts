@@ -12,7 +12,7 @@ export class Answer {
   @Prop({ type: [Number], default: [] })
   answersIndex: number[]  // 'A' = [0], 'B','C' = [1,2], none = []
 
-  @Prop({ type: String, required: true, enum: AnswerStatus, default: AnswerStatus.UNANSWERED })
+  @Prop({ type: Number, required: true, enum: AnswerStatus, default: AnswerStatus.UNANSWERED })
   status: AnswerStatus  // ← بديل لـ conflict + isCorrect جزئياً
 
   @Prop({ type: Boolean, required: true, default: false })
@@ -41,9 +41,9 @@ export class AnswerSheet {
   filePath: string
 
   @Prop({type: Number, required: true, enum: ProcessingStatus, default: ProcessingStatus.PENDING})
-  processingStatus: ProcessingStatus // 0: PENDING, 1: PROCESSING, 2: DONE, 3: FAILED
+  status: ProcessingStatus // 0: PENDING, 1: PROCESSING, 2: DONE, 3: FAILED
 
-  @Prop({type: Number})
+  @Prop({type: Number, default: 0})
   score: number
 
   @Prop({type: [Answer]})

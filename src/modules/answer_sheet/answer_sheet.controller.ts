@@ -24,10 +24,33 @@ export class AnswerSheetController {
   @Get(':examId')
   async getAnswerSheets(
     @Req() req: any,
-    @Param('examId') examId: string) {
+    @Param('examId') examId: string
+  ) {
     const userId = req.user._id;
     const result = await this.answerSheetService.getAnswerSheets(examId, userId);
     return {message: 'Answer sheets retrieved successfully', result};
+  }
+
+  // re-correct answer sheet
+  @Post(':Id/recorrect')
+  async reCorrectAnswerSheet(
+    @Req() req: any,
+    @Param('Id') Id: string
+  ) {
+    const userId = req.user._id;
+    const result = await this.answerSheetService.reCorrectAnswerSheet(Id, userId);
+    return {message: 'Answer sheets re-corrected successfully', result};
+  }
+
+  // re-correct all answer sheets for a specific exam
+  @Post(':examId/recorrect-all')
+  async reCorrectAllAnswerSheets(
+    @Req() req: any,
+    @Param('examId') examId: string
+  ) {
+    const userId = req.user._id;
+    const result = await this.answerSheetService.reCorrectAllSheets(examId, userId);
+    return {message: 'Answer sheets re-corrected successfully', result};
   }
 
 }

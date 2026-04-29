@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ExamService } from '../exam/exam.service';
-import { AnswerSheetRepository } from '@models/index';
+import { AnswerSheet, AnswerSheetRepository } from '@models/index';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
 import { ProcessingStatus, Tasks } from '@common/index';
@@ -14,7 +14,9 @@ export class AnswerSheetService {
     private readonly examService: ExamService,
     private readonly answerSheetRepository: AnswerSheetRepository,
     @InjectQueue(Tasks.PNG_CONVERTER)
-    private pngConverterQueue: Queue,
+    private readonly pngConverterQueue: Queue,
+    @InjectQueue(Tasks.CORRECT_QUESTIONS)
+    private readonly correctQuestionsQueue: Queue,
   ) {}
 
   async uploadAnswerSheets(examId: string, files: Express.Multer.File[], userId: string) {
@@ -52,7 +54,7 @@ export class AnswerSheetService {
       const answerSheet = await this.answerSheetRepository.create({
         examId: new Types.ObjectId(examId),
         filePath: filePath,
-        processingStatus: ProcessingStatus.PENDING
+        status: ProcessingStatus.PENDING
       });
 
       // add convert png job
@@ -87,10 +89,55 @@ export class AnswerSheetService {
     return answerSheets;
   }
 
+  
+  async reCorrectAnswerSheet(id: string, userId: string) {
+    const answerSheetExists = await this.answerSheetRepository.getOne({ _id: id });
+    if (!answerSheetExists) {
+      throw new NotFoundException('Answer sheet not found');
+    }
+
+    this.addRecorrectJob(answerSheetExists);
+
+    return "correcting...";
+  }
+  
+  async reCorrectAllSheets(examId: string, userId: string) {
+    const examExists = await this.examService.findOne(examId, userId);
+    if (!examExists) {
+      throw new NotFoundException('Exam not found');
+    }
+
+    const answerSheets = await this.answerSheetRepository.getAll({ examId: new Types.ObjectId(examId) });
+    
+    for (const answerSheet of answerSheets) {
+      this.addRecorrectJob(answerSheet);
+    }
+    
+    return "correcting...";
+  }
+  
   async updateStatus(id: string, status: ProcessingStatus) {
     const answerSheet = await this.answerSheetRepository.findOneAndUpdate({ _id: id }, {
-      processingStatus: status
+      status: status
     }, { new: true });
     return answerSheet;
+  }
+  
+  private addRecorrectJob(answerSheet: AnswerSheet) {
+    if (answerSheet.status !== ProcessingStatus.DONE && answerSheet.status !== ProcessingStatus.ANSWERS_DETECTED) {
+      throw new ForbiddenException('Sheet is not detected yet');
+    }
+    
+    //add correct questions job
+    this.correctQuestionsQueue.add(
+      Tasks.CORRECT_QUESTIONS,
+      {
+        answerSheetId: answerSheet._id
+      },
+      {
+        attempts: 3,
+        backoff: 5000
+      }
+    );  
   }
 }

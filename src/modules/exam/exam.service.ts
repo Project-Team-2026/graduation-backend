@@ -233,7 +233,7 @@ export class ExamService {
 
       if (updatedAnswer) {
         // This question was updated - use the new values
-        finalAnswer.answersIndex = updatedAnswer.answersIndex;
+        finalAnswer.answersIndex = !updatedAnswer.answersIndex || updatedAnswer.answersIndex.length === 0 ? existingAnswer.answersIndex : updatedAnswer.answersIndex;
         finalAnswer.status = AnswerStatus.ANSWERED; // Set status to ANSWERED when answer is provided
         finalAnswer.weight = updatedAnswer.weight || existingAnswer.weight;
       } 
