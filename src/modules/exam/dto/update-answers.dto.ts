@@ -1,6 +1,6 @@
 import { AnswerStatus } from "@common/index";
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsPositive } from "class-validator";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
 
 class AnswerDto {
     @IsNumber()
@@ -16,6 +16,10 @@ class AnswerDto {
     @IsNotEmpty()
     @IsEnum(AnswerStatus)
     status: AnswerStatus;
+    
+    @IsOptional()
+    @IsNumber()
+    weight: number;
 }
 
 

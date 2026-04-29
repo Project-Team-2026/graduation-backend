@@ -227,13 +227,15 @@ export class ExamService {
       let finalAnswer = {
         questionNumber: existingAnswer.questionNumber,
         answersIndex: existingAnswer.answersIndex,
-        status: existingAnswer.status
+        status: existingAnswer.status,
+        weight: existingAnswer.weight 
       };
 
       if (updatedAnswer) {
         // This question was updated - use the new values
         finalAnswer.answersIndex = updatedAnswer.answersIndex;
         finalAnswer.status = AnswerStatus.ANSWERED; // Set status to ANSWERED when answer is provided
+        finalAnswer.weight = updatedAnswer.weight || existingAnswer.weight;
       } 
 
       return finalAnswer;
