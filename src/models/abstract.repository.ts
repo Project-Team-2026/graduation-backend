@@ -21,4 +21,8 @@ export class AbstractRepository<T> {
         return this.model.findOneAndUpdate(filter, data, options);
     }
 
+    public async count(filter: QueryFilter<T>) {
+        return this.model.countDocuments(filter);
+    }
+
 }

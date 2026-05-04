@@ -1,4 +1,4 @@
-import { Controller, Param, Post, UploadedFiles, UseInterceptors, Req, Get } from '@nestjs/common';
+import { Controller, Param, Post, UploadedFiles, UseInterceptors, Req, Get, Query } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AnswerSheetService } from './answer_sheet.service';
 import { multerConfig } from '@utils/index';
@@ -24,10 +24,22 @@ export class AnswerSheetController {
   @Get(':examId')
   async getAnswerSheets(
     @Req() req: any,
+    @Param('examId') examId: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10
+  ) {
+    const userId = req.user._id;
+    const result = await this.answerSheetService.getAnswerSheets(examId, userId, page, limit);
+    return {message: 'Answer sheets retrieved successfully', result};
+  }
+
+  @Get(':examId/ambiguous-sheets')
+  async getAmbiguousSheets(
+    @Req() req: any,
     @Param('examId') examId: string
   ) {
     const userId = req.user._id;
-    const result = await this.answerSheetService.getAnswerSheets(examId, userId);
+    const result = await this.answerSheetService.getAmbiguousSheets(examId, userId);
     return {message: 'Answer sheets retrieved successfully', result};
   }
 
@@ -50,7 +62,7 @@ export class AnswerSheetController {
   ) {
     const userId = req.user._id;
     const result = await this.answerSheetService.reCorrectAllSheets(examId, userId);
-    return {message: 'Answer sheets re-corrected successfully', result};
+    return {message: 're-correcteding Answer sheets', result};
   }
 
 }

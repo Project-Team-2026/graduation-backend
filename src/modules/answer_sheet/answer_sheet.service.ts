@@ -78,7 +78,53 @@ export class AnswerSheetService {
   }
 
 
-  async getAnswerSheets(examId: string, userId: string) {
+  async getAnswerSheets(examId: string, userId: string, page: number = 1, limit: number = 10) {
+    const examExists = await this.examService.findOne(examId, userId);
+    if (!examExists) {
+      throw new NotFoundException('Exam not found');
+    }
+
+    const skip = (page - 1) * limit;
+    
+    const answerSheets = await this.answerSheetRepository.getAll(
+      { examId: new Types.ObjectId(examId) },
+      undefined,
+      { skip, limit }
+    );
+
+
+    
+    // Check if any sheets are still processing
+    const processingSheets = answerSheets.filter(sheet => sheet.status !== ProcessingStatus.DONE);
+    
+    // Get total count once
+    const totalSheets = await this.answerSheetRepository.count({ examId: new Types.ObjectId(examId) });
+    const totalPages = Math.ceil(totalSheets / limit);
+    const pagination = {
+      currentPage: page,
+      totalPages,
+      totalItems: totalSheets,
+      itemsPerPage: limit,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1
+    };
+    
+    if (processingSheets.length > 0) {
+      return {
+        message: "still processing...",
+        processingSheets: processingSheets.length,
+        totalSheets: answerSheets.length,
+        pagination
+      };
+    }
+
+    return {
+      answerSheets,
+      pagination
+    };
+  }
+
+  async getAmbiguousSheets(examId: string, userId: string) {
     const examExists = await this.examService.findOne(examId, userId);
     if (!examExists) {
       throw new NotFoundException('Exam not found');
