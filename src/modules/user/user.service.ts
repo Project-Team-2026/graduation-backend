@@ -1,5 +1,5 @@
 import { UserRepository } from '@models/index';
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { comparePassword, hashPassword } from '@utils/index';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -47,6 +47,10 @@ export class UserService {
     const isPasswordMatch = await comparePassword(oldPassword, user.password);
     if (!isPasswordMatch) {
       throw new UnauthorizedException('Invalid password');
+    }
+
+    if (oldPassword === newPassword) {
+      throw new BadRequestException('New password must be different from current password');
     }
 
 
