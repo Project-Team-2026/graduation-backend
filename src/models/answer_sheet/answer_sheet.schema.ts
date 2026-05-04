@@ -1,6 +1,6 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose"
 import  mongoose, { Types } from "mongoose"
-import { ProcessingStatus, AnswerStatus } from "@common/index"
+import { ProcessingStatus, AnswerStatus, SheetStatus } from "@common/index"
 import { Exam } from "../exam/exam.schema"
 
 @Schema()
@@ -41,7 +41,10 @@ export class AnswerSheet {
   filePath: string
 
   @Prop({type: Number, required: true, enum: ProcessingStatus, default: ProcessingStatus.PENDING})
-  status: ProcessingStatus // 0: PENDING, 1: PROCESSING, 2: DONE, 3: FAILED
+  processinStatus: ProcessingStatus // 0: PENDING, 1: PROCESSING, 2: DONE, 3: FAILED
+
+  @Prop({type: Number, required: true, enum: SheetStatus, default: SheetStatus.NORMAL})
+  sheetStatus: SheetStatus
 
   @Prop({type: Number, default: 0})
   score: number

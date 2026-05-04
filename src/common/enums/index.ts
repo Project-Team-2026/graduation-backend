@@ -31,6 +31,12 @@ export enum AnswerStatus {
   AMBIGUOUS,
 }
 
+export enum SheetStatus {
+  NORMAL,
+  MULTIPLE,
+  AMBIGUOUS,
+}
+
 export enum BubbleState {
   AMBIGUOUS = 0,
   EMPTY     = 1,

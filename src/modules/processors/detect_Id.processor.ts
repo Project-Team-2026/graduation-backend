@@ -30,7 +30,7 @@ export class DetectIdProcessor {
             { 
                 studentId: data.student_id,
                 idConflict: data.warning , 
-                status: ProcessingStatus.ID_DETECTED 
+                processinStatus: ProcessingStatus.ID_DETECTED 
             }
         );
         

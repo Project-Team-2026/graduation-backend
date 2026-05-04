@@ -36,7 +36,7 @@ export class PngCinverterProcessor {
         // Update answer sheet with converted PNG path
         await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, {
             filePath: result.data[0],
-            status: ProcessingStatus.PROCESSING
+            processinStatus: ProcessingStatus.PROCESSING
         });
 
         // after converting all pages to png, send job to preprocessing processor 
@@ -61,7 +61,7 @@ export class PngCinverterProcessor {
                 await this.answerSheetRepository.create({
                     examId: new Types.ObjectId(examId),
                     filePath: result.data[i],
-                    status: ProcessingStatus.PROCESSING
+                    processinStatus: ProcessingStatus.PROCESSING
                 });
 
 

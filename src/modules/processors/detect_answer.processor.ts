@@ -1,4 +1,4 @@
-import { AnswerStatus, BubbleState, Tasks, ProcessingStatus } from "@/common";
+import { AnswerStatus, BubbleState, Tasks, ProcessingStatus, SheetStatus } from "@/common";
 import { AnswerSheetRepository } from "@/models";
 import { runPythonScript } from "@/utils";
 import { InjectQueue, Process, Processor } from "@nestjs/bull";
@@ -17,6 +17,7 @@ export class DetectAnswerProcessor {
 
         const { answerSheetId, filePath, q_no } = job.data;
         let choices: any[] = [];
+        let overallSheetStatus = SheetStatus.NORMAL;
         // Implement answer detection logic here(python script)
         let result = await runPythonScript(Tasks.DETECT_ANSWER, filePath, q_no) as any;
         const { data } = JSON.parse(result);
@@ -38,10 +39,12 @@ export class DetectAnswerProcessor {
             
             if (hasAmbiguous) {
                 status = AnswerStatus.AMBIGUOUS;
+                overallSheetStatus = SheetStatus.AMBIGUOUS;
             } else if (answersIndex.length === 0) {
                 status = AnswerStatus.UNANSWERED;
             } else if (answersIndex.length > 1) {
                 status = AnswerStatus.MULTIPLE;
+                overallSheetStatus = SheetStatus.MULTIPLE;
             } else {
                 status = AnswerStatus.ANSWERED;
             }
@@ -62,7 +65,8 @@ export class DetectAnswerProcessor {
             { _id: answerSheetId }, 
             { 
                 answers: answers,
-                status: ProcessingStatus.ANSWERS_DETECTED
+                processinStatus: ProcessingStatus.ANSWERS_DETECTED,
+                sheetStatus: overallSheetStatus
             }
         );
 

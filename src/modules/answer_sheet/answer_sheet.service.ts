@@ -3,7 +3,7 @@ import { ExamService } from '../exam/exam.service';
 import { AnswerSheet, AnswerSheetRepository } from '@models/index';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
-import { ProcessingStatus, Tasks } from '@common/index';
+import { ProcessingStatus, SheetStatus, Tasks } from '@common/index';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 
@@ -54,7 +54,7 @@ export class AnswerSheetService {
       const answerSheet = await this.answerSheetRepository.create({
         examId: new Types.ObjectId(examId),
         filePath: filePath,
-        status: ProcessingStatus.PENDING
+        processinStatus: ProcessingStatus.PENDING
       });
 
       // add convert png job
@@ -95,7 +95,7 @@ export class AnswerSheetService {
 
     
     // Check if any sheets are still processing
-    const processingSheets = answerSheets.filter(sheet => sheet.status !== ProcessingStatus.DONE);
+    const processingSheets = answerSheets.filter(sheet => sheet.processinStatus !== ProcessingStatus.DONE);
     
     // Get total count once
     const totalSheets = await this.answerSheetRepository.count({ examId: new Types.ObjectId(examId) });
@@ -129,8 +129,24 @@ export class AnswerSheetService {
     if (!examExists) {
       throw new NotFoundException('Exam not found');
     }
+    
+    const answerSheets = await this.answerSheetRepository.getAll(
+      { examId: new Types.ObjectId(examId), $or: [{ sheetStatus: SheetStatus.AMBIGUOUS }, { sheetStatus: SheetStatus.MULTIPLE }] },
+    );
 
-    const answerSheets = await this.answerSheetRepository.getAll({ examId: new Types.ObjectId(examId) });
+
+    
+    // Check if any sheets are still processing
+    const processingSheets = answerSheets.filter(sheet => sheet.processinStatus !== ProcessingStatus.DONE);
+    
+    
+    if (processingSheets.length > 0) {
+      return {
+        message: "still processing...",
+        processingSheets: processingSheets.length,
+        totalSheets: answerSheets.length
+      };
+    }
 
     return answerSheets;
   }
@@ -164,13 +180,13 @@ export class AnswerSheetService {
   
   async updateStatus(id: string, status: ProcessingStatus) {
     const answerSheet = await this.answerSheetRepository.findOneAndUpdate({ _id: id }, {
-      status: status
+      processinStatus: status
     }, { new: true });
     return answerSheet;
   }
   
   private addRecorrectJob(answerSheet: AnswerSheet) {
-    if (answerSheet.status !== ProcessingStatus.DONE && answerSheet.status !== ProcessingStatus.ANSWERS_DETECTED) {
+    if (answerSheet.processinStatus !== ProcessingStatus.DONE && answerSheet.processinStatus !== ProcessingStatus.ANSWERS_DETECTED) {
       throw new ForbiddenException('Sheet is not detected yet');
     }
     

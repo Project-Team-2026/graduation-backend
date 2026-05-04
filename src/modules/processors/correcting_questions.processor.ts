@@ -1,5 +1,5 @@
 import { Processor, Process } from "@nestjs/bull";
-import { Tasks } from "@/common";
+import {  Tasks } from "@/common";
 import type { Job } from "bull";
 import { AnswerSheetRepository, Exam, ExamRepository } from "@/models/index";
 import { AnswerStatus, ProcessingStatus } from "@/common/index";
@@ -16,7 +16,6 @@ export class CorrectingQuestionsProcessor {
     @Process(Tasks.CORRECT_QUESTIONS)
     async handleCorrectQuestions(job: Job) {
         const { answerSheetId } = job.data;
-        console.log('answerSheetId: ', answerSheetId);
         if (!answerSheetId) {
             console.log('Answer sheet ID is required');
             return;
@@ -28,7 +27,7 @@ export class CorrectingQuestionsProcessor {
             console.log(`Answer sheet with ID ${answerSheetId} not found`);
             return;
         }
-        if (answerSheet.status !== ProcessingStatus.DONE && answerSheet.status !== ProcessingStatus.ANSWERS_DETECTED) {
+        if (answerSheet.processinStatus !== ProcessingStatus.DONE && answerSheet.processinStatus !== ProcessingStatus.ANSWERS_DETECTED) {
             console.log(`Answer sheet with ID ${answerSheetId} is not in answers detected yet`);
             return;
         }
@@ -36,7 +35,7 @@ export class CorrectingQuestionsProcessor {
         const exam = await this.examRepository.getOne({ _id: answerSheet.examId });
         if(!exam) {
             // update answer sheet status to failed
-            await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, { status: ProcessingStatus.FAILED });
+            await this.answerSheetRepository.findOneAndUpdate({ _id: answerSheetId }, { processinStatus: ProcessingStatus.FAILED });
             console.log(`Exam with ID ${answerSheet.examId} not found`);
             return;
         }
@@ -69,7 +68,7 @@ export class CorrectingQuestionsProcessor {
             { 
                 score: answerSheet.score,
                 answers: answerSheet.answers, 
-                status: ProcessingStatus.DONE 
+                processinStatus: ProcessingStatus.DONE,
             }
         );
         
