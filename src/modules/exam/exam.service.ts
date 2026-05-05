@@ -259,5 +259,21 @@ export class ExamService {
     }, { new: true });
     return exam;
   }
+  
+  async deleteModelAnswer(id: string, userId: string) {
+    const exam = await this.examRepository.findOneAndUpdate({ _id: id }, {
+      answerSheetUrl: "",
+      answerKey: [],
+      totalMarks: 0,
+      totalQuestions: 0,
+      processingStatus: ProcessingStatus.PENDING
+    }, { returnDocument: 'after' });
+
+    if (!exam) {
+      throw new NotFoundException('Exam not found');
+    }
+
+    return exam;
+  }
 
 }

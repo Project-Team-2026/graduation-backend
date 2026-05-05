@@ -66,4 +66,13 @@ export class ExamController {
     };
   }
 
+  @Patch(':id')
+  async delete(@Param('id') id: string, @Req() req: any) {
+    const exam = await this.examService.deleteModelAnswer(id, req.user._id);
+    return {
+      message: 'Model answer deleted successfully',
+      data: exam,
+    };
+  }
+
 }
