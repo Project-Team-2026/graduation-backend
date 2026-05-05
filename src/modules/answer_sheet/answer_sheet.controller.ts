@@ -1,4 +1,4 @@
-import { Controller, Param, Post, UploadedFiles, UseInterceptors, Req, Get, Query } from '@nestjs/common';
+import { Controller, Param, Post, UploadedFiles, UseInterceptors, Req, Get, Query, Body, Patch } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AnswerSheetService } from './answer_sheet.service';
 import { multerConfig } from '@utils/index';
@@ -46,11 +46,9 @@ export class AnswerSheetController {
   // re-correct answer sheet
   @Post(':Id/recorrect')
   async reCorrectAnswerSheet(
-    @Req() req: any,
     @Param('Id') Id: string
   ) {
-    const userId = req.user._id;
-    const result = await this.answerSheetService.reCorrectAnswerSheet(Id, userId);
+    const result = await this.answerSheetService.reCorrectAnswerSheet(Id);
     return {message: 'Answer sheets re-corrected successfully', result};
   }
 
@@ -63,6 +61,16 @@ export class AnswerSheetController {
     const userId = req.user._id;
     const result = await this.answerSheetService.reCorrectAllSheets(examId, userId);
     return {message: 're-correcteding Answer sheets', result};
+  }
+
+  // update answer sheet ( answers and studentId)
+  @Patch(':Id')
+  async updateAnswerSheet(
+    @Param('Id') Id: string,
+    @Body() updateAnswerSheetDto: any
+  ) {
+    const result = await this.answerSheetService.updateAnswerSheet(Id, updateAnswerSheetDto);
+    return {message: result};
   }
 
 }

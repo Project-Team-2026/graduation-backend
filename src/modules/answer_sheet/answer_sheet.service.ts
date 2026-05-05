@@ -1,11 +1,12 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ExamService } from '../exam/exam.service';
 import { AnswerSheet, AnswerSheetRepository } from '@models/index';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
-import { ProcessingStatus, SheetStatus, Tasks } from '@common/index';
+import { ProcessingStatus, SheetStatus, Tasks, AnswerStatus } from '@common/index';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
+import { UpdateAnswerSheetDto } from './dto/update-answer_sheet.dto';
 
 @Injectable()
 export class AnswerSheetService {
@@ -86,19 +87,22 @@ export class AnswerSheetService {
 
     const skip = (page - 1) * limit;
     
+    // Get total count of all sheets for this exam
+    const totalSheets = await this.answerSheetRepository.count({ examId: new Types.ObjectId(examId) });
+    
+    // Get sheets for the current page
     const answerSheets = await this.answerSheetRepository.getAll(
       { examId: new Types.ObjectId(examId) },
       undefined,
       { skip, limit }
     );
 
-
+    // Check how many sheets are still processing (across ALL sheets, not just the current page)
+    const processingSheetsCount = await this.answerSheetRepository.count({ 
+      examId: new Types.ObjectId(examId),
+      processinStatus: { $ne: ProcessingStatus.DONE }
+    });
     
-    // Check if any sheets are still processing
-    const processingSheets = answerSheets.filter(sheet => sheet.processinStatus !== ProcessingStatus.DONE);
-    
-    // Get total count once
-    const totalSheets = await this.answerSheetRepository.count({ examId: new Types.ObjectId(examId) });
     const totalPages = Math.ceil(totalSheets / limit);
     const pagination = {
       currentPage: page,
@@ -109,17 +113,12 @@ export class AnswerSheetService {
       hasPreviousPage: page > 1
     };
     
-    if (processingSheets.length > 0) {
-      return {
-        message: "still processing...",
-        processingSheets: processingSheets.length,
-        totalSheets: answerSheets.length,
-        pagination
-      };
-    }
-
+    // Always return the structure including answerSheets and processingSheets
     return {
-      answerSheets,
+      message: processingSheetsCount > 0 ? "still processing..." : "all done",
+      answerSheets: answerSheets.length > 0 ? answerSheets : [],
+      processingSheets: processingSheetsCount,
+      totalSheets: totalSheets,
       pagination
     };
   }
@@ -152,7 +151,7 @@ export class AnswerSheetService {
   }
 
   
-  async reCorrectAnswerSheet(id: string, userId: string) {
+  async reCorrectAnswerSheet(id: string) {
     const answerSheetExists = await this.answerSheetRepository.getOne({ _id: id });
     if (!answerSheetExists) {
       throw new NotFoundException('Answer sheet not found');
@@ -177,6 +176,61 @@ export class AnswerSheetService {
     
     return "correcting...";
   }
+
+  async updateAnswerSheet(id: string, updateAnswerSheetDto: UpdateAnswerSheetDto) {
+    
+    
+    let answerSheet = await this.answerSheetRepository.getOne({ _id: new Types.ObjectId(id) });
+    
+    if (!answerSheet || answerSheet.processinStatus !== ProcessingStatus.DONE) {
+      throw new BadRequestException('Answer sheet not found or not processed yet');
+    }
+    
+    // Create a map of updated answers for quick lookup
+    const updatedAnswersMap = new Map();
+    if (updateAnswerSheetDto.answers && Array.isArray(updateAnswerSheetDto.answers)) {
+      updateAnswerSheetDto.answers.forEach(answer => {
+        updatedAnswersMap.set(answer.questionNumber, answer);
+      });
+    }
+
+    // Update only the questions that were modified
+    const updatedAnswerKey = answerSheet.answers.map(existingAnswer => {
+      const updatedAnswer = updatedAnswersMap.get(existingAnswer.questionNumber);
+      
+      let finalAnswer = {
+        questionNumber: existingAnswer.questionNumber,
+        answersIndex: existingAnswer.answersIndex,
+        status: existingAnswer.status,
+        isCorrect: existingAnswer.isCorrect
+      };
+
+      if (updatedAnswer) {
+        // This question was updated - use the new values
+        finalAnswer.answersIndex = !updatedAnswer.answersIndex || updatedAnswer.answersIndex.length === 0 ? existingAnswer.answersIndex : updatedAnswer.answersIndex;
+        finalAnswer.status = AnswerStatus.ANSWERED; // Set status to ANSWERED when answer is provided
+      } 
+
+      return finalAnswer;
+    });
+
+    // Save exam with updated answerKey    
+    const result = await this.answerSheetRepository.findOneAndUpdate(
+      { _id: id }, 
+      { 
+        answers: updatedAnswerKey,
+        sheetStatus: SheetStatus.NORMAL,
+        studentId: updateAnswerSheetDto.studentId ? updateAnswerSheetDto.studentId : answerSheet.studentId
+      }, 
+      { returnDocument: 'after' }
+    );
+
+    // recorrect questions
+    this.reCorrectAnswerSheet(id);
+    
+    return "sheet updated successfully, recorreting...";
+  }
+
   
   async updateStatus(id: string, status: ProcessingStatus) {
     const answerSheet = await this.answerSheetRepository.findOneAndUpdate({ _id: id }, {
