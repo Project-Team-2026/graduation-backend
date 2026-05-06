@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseInterceptors, UploadedFile, Req, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { ExamService } from './exam.service';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from '../../utils';
+import { multerConfig, generateExcel } from '@utils/index';
 import { ModelAnswerDto } from './dto/model-answer.dto';
 import { UpdateAnswersDto } from './dto';
 

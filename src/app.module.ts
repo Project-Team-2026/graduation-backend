@@ -9,6 +9,7 @@ import devConfig from './config/env/dev.config';
 import { AnswerSheet, AnswerSheetSchema, Exam, ExamSchema, User, UserSchema } from './models';
 import { AnswerSheetModule, AuthModule, ExamModule, ProcessingModule, UserModule } from './modules';
 import { BullModule } from '@nestjs/bull';
+import { ResultsModule } from './modules/results/results.module';
 
 
 @Module({
@@ -52,6 +53,7 @@ import { BullModule } from '@nestjs/bull';
     UserModule,
     ExamModule,
     AnswerSheetModule,
+    ResultsModule,
   ],
   controllers: [AppController],
   providers: [
