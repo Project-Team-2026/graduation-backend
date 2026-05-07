@@ -7,7 +7,7 @@ import glob
 # import REF_PATH from 
 
 # ========= SETTINGS =========
-REF_PATH = "D:\\Graduathion_project\\graduation-backend\\python\\models\\reference.png"
+REF_PATH = "C:\\Graduation\\graduation-backend\\python\\models\\reference.png"
 JSON_OUT = "ids_results.json"
 
 X_START_RATIO, X_END_RATIO = 0.365, 0.56

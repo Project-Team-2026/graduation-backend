@@ -187,7 +187,12 @@ export class ExamService {
               status = AnswerStatus.ANSWERED;
             }
 
-          choices.push({ questionNumber: i+1, answersIndex, status });
+          choices.push({ 
+            questionNumber: i+1, 
+            answersIndex, 
+            status,
+            weight: examExist.answerKey.find(ak => ak.questionNumber === i + 1)?.weight || 1
+          });
       }
       
       
