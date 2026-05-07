@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateExamDto, ModelAnswerDto, UpdateAnswersDto } from './dto';
+import { CreateExamDto, UpdateAnswersDto } from './dto';
 import { ExamRepository } from '@models/index';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
@@ -23,7 +23,29 @@ export class ExamService {
     if (examExist) {
       throw new ConflictException("Exam alredy exist")
     }
-    return await this.examRepository.create({ title: createExamDto.title, createdBy: new Types.ObjectId(userId) });
+
+    let questions: any = []
+
+    for (let i = 0; i < createExamDto.questionsNumber; i++) {
+      let question = {
+        questionNumber: i + 1,
+        answersIndex: [],
+        status: AnswerStatus.UNANSWERED,
+        weight: createExamDto.weight || 1,
+      }
+      questions.push(question)
+    }
+
+    return await this.examRepository.create({ 
+      title: createExamDto.title,
+      doctorName: createExamDto.doctorName,
+      department: createExamDto.department,
+      answerKey: questions,
+      totalQuestions: createExamDto.questionsNumber,
+      totalMarks: createExamDto.questionsNumber * (createExamDto.weight || 1),
+      createdBy: new Types.ObjectId(userId),
+    });
+
   }
 
 
@@ -43,7 +65,7 @@ export class ExamService {
     return exam;
   }
 
-  async uploadModelAnswer(id: string, file: Express.Multer.File, modelAnswerDto: ModelAnswerDto, userId: string) {
+  async uploadModelAnswer(id: string, file: Express.Multer.File, userId: string) {
 
     const examExist = await this.findOne(id, userId)
     if (!examExist) {
@@ -117,7 +139,7 @@ export class ExamService {
       
       // 3. Detect answers from the model answer sheet
       console.log('Detecting model answers...');
-      let answersResult = await runPythonScript(Tasks.DETECT_ANSWER, pngPath, modelAnswerDto.totalQuestions) as any;
+      let answersResult = await runPythonScript(Tasks.DETECT_ANSWER, pngPath, examExist.totalQuestions) as any;
       let { data, success } = JSON.parse(answersResult);
       
       if (!success) {
@@ -178,8 +200,6 @@ export class ExamService {
         { 
           answerSheetUrl: pngPath,
           answerKey: choices,
-          totalQuestions: modelAnswerDto.totalQuestions,
-          totalMarks: modelAnswerDto.totalMarks,
           processingStatus: ProcessingStatus.DONE
         },
         { returnDocument: 'after' } // Return the updated document

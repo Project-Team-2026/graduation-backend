@@ -4,7 +4,6 @@ import { ExamService } from './exam.service';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig, generateExcel } from '@utils/index';
-import { ModelAnswerDto } from './dto/model-answer.dto';
 import { UpdateAnswersDto } from './dto';
 
 @Controller('exam')
@@ -49,9 +48,8 @@ export class ExamController {
     @Req() req: any,
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
-    @Body() modelAnswerDto: ModelAnswerDto
   ) {
-    const exam = await this.examService.uploadModelAnswer(id, file, modelAnswerDto, req.user._id);
+    const exam = await this.examService.uploadModelAnswer(id, file, req.user._id);
     return {
       message: 'Model answer uploaded successfully',
       data: exam,

@@ -39,15 +39,18 @@ export class Exam {
   
   @Prop({ type: Number })
   totalMarks: number;
-  
-  @Prop({ type: Number })
-  passingMark: number;
 
   @Prop({ type: String })
   answerSheetUrl: string
 
   @Prop({ type: Number, default: ProcessingStatus.PENDING })
   processingStatus: ProcessingStatus
+
+  @Prop({ type: String })
+  doctorName: string
+
+  @Prop({ type: String })
+  department: string
 
   @Prop({ type: [AnswerKey] })
   answerKey: AnswerKey[];
