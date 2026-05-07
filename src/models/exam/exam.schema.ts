@@ -15,7 +15,7 @@ export class AnswerKey {
   @Prop({ type: Number, required: true, enum: AnswerStatus, default: AnswerStatus.UNANSWERED })
   status: AnswerStatus  // ← بديل لـ conflict + isCorrect جزئياً
 
-  @Prop({ type: Number, default: 1 })
+  @Prop({ type: Number })
   weight: number
 
 }
