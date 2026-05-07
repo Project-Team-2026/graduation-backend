@@ -146,6 +146,141 @@ export class ResultsService {
     return await generateCombinedExcel(resultsData, statisticsData);
   }
 
+  async dashboard(userId: string): Promise<any> {
+
+    const createdBy = new ObjectId(userId);
+
+    const [
+      totalExams,
+      totalSheets,
+      processedSheets,
+      failedSheets,
+      pendingSheets,
+      avgScoreResult,
+      lastExamCreated,
+      lastExamUpdated,
+      idConflictedSheets,
+      uploadOverTime
+    ] = await Promise.all([
+      // Get exams count
+      this.examReposatory.count({ createdBy }),
+
+      // Get answer sheets count
+      this.answerSheetReposatory.count({ createdBy }),
+      
+      // Get processed sheets count
+      this.answerSheetReposatory.count({
+        createdBy,
+        processinStatus: ProcessingStatus.DONE
+      }),
+
+      // Get failed sheets count
+      this.answerSheetReposatory.count({
+        createdBy,
+        processinStatus: ProcessingStatus.FAILED
+      }),
+      
+      // Get pending sheets count
+      this.answerSheetReposatory.count({
+        createdBy,
+        processinStatus: ProcessingStatus.PENDING
+      }),
   
+      // Average score aggregation
+      this.answerSheetReposatory.aggregate([
+        {
+          $match: {
+            createdBy,
+            processinStatus: ProcessingStatus.DONE
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            avg: { $avg: "$score" }
+          }
+        }
+      ]),
+  
+      // last exam created
+      this.examReposatory.getOne({ createdBy }, { sort: { createdAt: -1 } }),
+      // last exam updated
+      this.examReposatory.getOne({ createdBy }, { sort: { updatedAt: -1 } }),
+
+      // Get conflicted sheets count
+      this.answerSheetReposatory.count({ createdBy, idConflict: true }),
+
+      // Upload over time for last month
+      this.answerSheetReposatory.aggregate([
+        {
+          $match: {
+            createdBy,
+            createdAt: {
+              $gte: new Date(new Date().setDate(new Date().getDate() - 30))
+            }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              day: {
+                $dateToString: {
+                  format: "%Y-%m-%d",
+                  date: "$createdAt"
+                }
+              }
+            },
+            count: { $sum: 1 }
+          }
+        },
+        {
+          $sort: {
+            "_id.day": 1
+          }
+        }
+      ])
+       
+    ]);
+    
+    const avgScore = Number(
+      (avgScoreResult[0]?.avg || 0).toFixed(2)
+    );
+
+    const successRate =
+      totalSheets > 0
+      ? Number(((processedSheets / totalSheets) * 100).toFixed(1))
+      : 0;
+
+    return { 
+
+      cards: {
+        totalExams, 
+        totalSheets,
+        processedSheets, 
+        failedSheets, 
+        pendingSheets,
+        avgScore
+      },
+
+      charts: {
+        sheetsProcessingStatus: {
+          processedSheets,
+          successRate,
+          failedSheets,
+          pendingSheets,
+        },
+
+        uploadOverTime: uploadOverTime.map(item => ({
+        date: item._id.day,
+        count: item.count
+      }))
+      },
+
+      lastExamCreated, 
+      lastExamUpdated,
+      idConflictedSheets,
+
+    };
+  }
   
 }

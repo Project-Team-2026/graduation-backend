@@ -64,4 +64,15 @@ export class ResultsController {
     res.end(buffer);
   }
 
+
+  @Get('dashboard')
+  async dashboard(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const userId = req.user._id;
+    const data = await this.resultsService.dashboard(userId);
+    return {data};
+  }
+
 }

@@ -189,9 +189,6 @@ export class ExamService {
 
           choices.push({ questionNumber: i+1, answersIndex, status });
       }
-
-      console.log("data : ",data)
-      console.log("choices : ", choices);
       
       
       // 5. Update exam with model answers

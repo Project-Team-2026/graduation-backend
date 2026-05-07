@@ -54,8 +54,9 @@ export class AnswerSheetService {
       // save file path to database
       const answerSheet = await this.answerSheetRepository.create({
         examId: new Types.ObjectId(examId),
+        createdBy: new Types.ObjectId(userId),
         filePath: filePath,
-        processinStatus: ProcessingStatus.PENDING
+        processinStatus: ProcessingStatus.PENDING,
       });
 
       // add convert png job

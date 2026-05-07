@@ -25,4 +25,8 @@ export class AbstractRepository<T> {
         return this.model.countDocuments(filter);
     }
 
+    public async aggregate(pipeline: any[]) {
+        return this.model.aggregate(pipeline);
+    }
+
 }

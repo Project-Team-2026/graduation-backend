@@ -2,6 +2,7 @@ import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose"
 import  mongoose, { Types } from "mongoose"
 import { ProcessingStatus, AnswerStatus, SheetStatus } from "@common/index"
 import { Exam } from "../exam/exam.schema"
+import { User } from "../user/user.schema"
 
 @Schema()
 export class Answer {
@@ -27,6 +28,9 @@ export class AnswerSheet {
 
     
   readonly _id: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  createdBy: Types.ObjectId
 
   @Prop({type: Types.ObjectId, ref: Exam.name})
   examId: Types.ObjectId
