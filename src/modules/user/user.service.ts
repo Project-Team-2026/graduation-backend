@@ -37,6 +37,14 @@ export class UserService {
     return users;
   }
 
+  async toggleStatus(id: string, isActive: boolean) {
+    const user = await this.userRepository.findOneAndUpdate({ _id: id }, { isActive }, { new: true, projection: { password: 0 } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
 
   async changePassword(id: string, changePasswordDto: ChangePasswordDto){
     const { oldPassword, newPassword } = changePasswordDto;

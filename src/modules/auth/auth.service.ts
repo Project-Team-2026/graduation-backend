@@ -21,6 +21,11 @@ export class AuthService {
       throw new UnauthorizedException('invalid username');
     }
 
+    if (userExists.isActive === false) {
+      console.log(`[AuthService] User is disabled: "${loginDto.username}"`);
+      throw new UnauthorizedException('please contact with admin');
+    }
+
     console.log(`[AuthService] User found: ${userExists.username} (ID: ${userExists._id})`);
 
     // check if password is correct

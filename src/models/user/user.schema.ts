@@ -16,12 +16,11 @@ export class User {
     @Prop({ type: String, required: true })
     password: string;
     
-    @Prop({ type: String })
-    email: string;
-    
     @Prop({ type: Number, default: UserRole.USER, enum: UserRole })
     role: UserRole;
 
+    @Prop({ type: Boolean, default: true })
+    isActive: boolean;
 }
 
 
